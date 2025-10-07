@@ -8,6 +8,12 @@ alerting:
         - targets:
             - 'alertmanager:9093'
 
+scrape_configs:
+  - job_name: 'cpu-exporter'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['cpu-exporter:9900']
+
 rule_files:
   - 'rules/1.basic.yml'
   #- 'rules/2.absent.yml'

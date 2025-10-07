@@ -1,4 +1,25 @@
 {
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "12.2.0"
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -18,14 +39,12 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 5,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "datasource": {
-        "type": "grafana-testdata-datasource",
-        "uid": "testdata_uid"
+        "type": "prometheus",
+        "uid": "DS_PROMETHEUS_UID"
       },
       "fieldConfig": {
         "defaults": {
@@ -39,6 +58,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -55,6 +75,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -70,7 +91,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -78,13 +99,13 @@
               }
             ]
           },
-          "unitScale": true
+          "unit": "percent"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 24,
         "x": 0,
         "y": 0
       },
@@ -97,27 +118,30 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
-            "type": "grafana-testdata-datasource",
-            "uid": "testdata_uid"
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
           },
-          "refId": "A",
-          "scenarioId": "random_walk"
+          "editorMode": "builder",
+          "expr": "cpu_usage",
+          "legendFormat": "CPU Usage",
+          "range": true,
+          "refId": "A"
         }
       ],
-      "title": "New Panel",
-      "transformations": [],
+      "title": "CPU Usage",
       "type": "timeseries"
     }
   ],
-  "refresh": "",
-  "schemaVersion": 39,
+  "schemaVersion": 42,
   "tags": [],
   "templating": {
     "list": []
@@ -127,9 +151,10 @@
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "",
-  "title": "Custom Dashboard (Random Walk TestData)",
-  "uid": "random-walk",
-  "version": 1,
-  "weekStart": ""
+  "timezone": "browser",
+  "title": "CPU Dashboard",
+  "uid": "ad9m29b",
+  "version": 4,
+  "weekStart": "",
+  "id": null
 }

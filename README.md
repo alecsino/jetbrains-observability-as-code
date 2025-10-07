@@ -1,70 +1,69 @@
-# Demo Alerting in Prometheus and Grafana 
+# Task – Grafana Dashboard for `cpu_usage` Metric
 
-Grafana Alerting is built on the Prometheus Alerting model. This demo project showcases the similarities between Prometheus and Grafana alerting systems, covering topics such as:
+## Overview
 
-- Creating alerts in Prometheus
-- Recreating the same alerts using Grafana
-- Setting up alerts based on Loki logs
-- Exploring alerting components like evaluation groups and notification policies
-- Creating template notifications
-- And more!
+This repository implements **Task #2** from the assignment:
 
-This project pairs well with this [Alerting Presentation Template](https://docs.google.com/presentation/d/1XvJnBlNnXUjiS409ABN4NxNkFZoYDmoRKKoJqsvln-g/edit?usp=sharing). Together, they provide an excellent starting point for presenting the Prometheus Alerting model and demonstrating its use in Grafana.
+> **Task:** Prepare a Grafana dashboard for the `cpu_usage` metric  
+> **Base repository:** [grafana/demo-prometheus-and-grafana-alerts](https://github.com/grafana/demo-prometheus-and-grafana-alerts)
 
-## Run the demo environment
+Instead of using the mock metrics generated via `k6` scripts from the original demo, I created a **real Java-based Prometheus exporter** that exposes an actual CPU usage metric (`cpu_usage`) via Spring Boot and Micrometer.  
+Grafana visualizes this metric using a custom dashboard provided as a JSON definition.
 
-This repository includes a [Docker Compose setup](./docker-compose.yaml) that runs Grafana, Prometheus, Prometheus Alertmanager, Loki, and an SMTP server for testing email notifications.
+---
 
-To run the demo environment:
+## Project structure
 
-```bash
-docker compose up
+```
+.
+├── docker-compose.yml
+├── exporters/
+│ └── cpu-exporter/ # Spring Boot application
+│    └── Dockerfile
+|── grafana/
+|  └── dashboards/
+|    └── dashboard.yaml # Dashboard provisioning config
+|  └── definitions/
+|    └── cpu-usage.json # The dashboard JSON definition
+├── prometheus/
+│ └── prometheus.yml # Added scrape config for cpu-exporter
+| ... other files ...
 ```
 
-You can then access:
-- Grafana: [http://localhost:3000](http://localhost:3000/)
-- Prometheus web UI: [http://localhost:9090](http://localhost:9090/)
-- Alertmanager web UI: [http://localhost:9093](http://localhost:9093/)
+---
 
-### Generating test data
+## Components
 
-This demo uses [Grafana k6](https://grafana.com/docs/k6) to generate test data for Prometheus and Loki.
+### **CPU Exporter (Spring Boot / Java 17)**
 
-The [k6 tests in the `testdata` folder](./testdata/) inject Prometheus metrics and Loki logs that you can use to define alert queries and conditions. 
+A simple Spring Boot application that:
+- Uses **Micrometer** + **Prometheus registry** to expose metrics at  
+  **`/actuator/prometheus`**
+- Runs inside Docker and is exposed on port 9900
 
-1. Install **k6 v1.2.0** or later.
+#### Note:
+Because this application runs in a Docker container, it reports container-level CPU usage, not the host machine’s full CPU utilization.
+In real-world setups, Node Exporter or similars would be used for system-level CPU metrics instead of a Java app - I wanted to go with this approach to dust off my Java.
 
-2. Run a k6 test with the following command:
+### **Grafana Dashboard**
 
-    ```bash
-    k6 run testdata/<FILE>.js
-    ```
+A grafana dashboard visualizing the `cpu_usage` metric, automatically provisioned via the `dashboard.yaml` file.
+- Dashboard JSON definition: `grafana/dashboards/definitions/cpu-usage.json`
 
-You can modify and run the k6 scripts to simulate different alert scenarios.
-For details on inserting data into Prometheus or Loki, see the `xk6-client-prometheus-remote` and `xk6-loki` APIs.
+### **Prometheus Configuration**
 
-### Receive webhook notifications
+The Prometheus configuration file (`prometheus/prometheus.yml`) has been updated to include a scrape job for the `cpu-exporter` service.
 
-One of the simplest ways to receive alert notifications is by using a Webhook.  You can use [`webhook.site`](https://webhook.site/) to create Webhook URLs and view the incoming messages.
+## Running the Setup
 
-- For Prometheus alertmanager: 
-  
-  Set the Webhook URL to the [alertmanager.yml](./alertmanager/alertmanager.yml) configuration file.
+1. Start the Docker containers:
+   ```bash
+   docker-compose up -d
+   ```
 
-- For Grafana:
-  
-  Create a Webhook contact point and assign it to the notification policy.
+2. Access the CPU Exporter:
+   - Open your browser and go to `http://localhost:9900/actuator/prometheus` to see the exposed metrics.
 
-### Receive mail notifications
-
-You can also configure notifications to be sent via your Gmail account using an [App Password](https://support.google.com/accounts/answer/185833?hl=en). After creating your App password:
-
-- For Prometheus Alertmanager:
-
-  Replace `your_mail@gmail` with your Gmail address in the [alertmanager.yml](./alertmanager/alertmanager.yml) configuration file.
-
-  Copy `alertmanager/smtp_auth_password.example` to `alertmanager/smtp_auth_password` and set your password.
-
-- For Grafana:
-
-  Copy `environments/smpt.env.example` to `environments/smpt.env` and set the appropriate environment variables values.
+3. Access Grafana:
+   - Open your browser and go to `http://localhost:3000`
+   - Login with the default credentials (`admin`/`admin`), and you should see the provisioned dashboard for `cpu_usage`.

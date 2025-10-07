@@ -1,4 +1,11 @@
 services:
+  cpu-exporter:
+    build:
+      context: ./exporters/cpu-exporter
+    image: cpu-exporter:latest
+    container_name: cpu-exporter
+    ports:
+      - "9900:9900"
   smtp:
     image: ixdotai/smtp:v0.7.6
     container_name: smtp
